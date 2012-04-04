@@ -77,7 +77,7 @@
 
             if (dr || dc) {
               e.preventDefault();
-              alert("(" + dr + ", " + dc + ")");
+              // TODO
             }
           }
         });
@@ -172,12 +172,79 @@
           SetCentreText("Click to begin.");
         }
 
+        var level_name = 'Meet the smiley';
+        var author = 'David Rhee';
+        var game_width = 11;
+        var game_height = 6;
+        var blocks = [
+          '###########',
+          '#....#....#',
+          '#.R..#....#',
+          '#....#....#',
+          '#.........#',
+          '###########'
+        ];
+        var goals = [
+          '###########',
+          '#....#....#',
+          '#....#..r.#',
+          '#....#....#',
+          '#.........#',
+          '###########'
+        ];
+
+        var BLACK = '#000000';
+        var WALL = '#c0c0c0';
+        var RED = '#ff3737';
+        var YELLOW = '#ffda37';
+        var BLUE = '#5f66f5';
+        var GOAL_RED = '#c00000';
+        var GOAL_BLUE = '#000080';
+        var GOAL_YELLOW = '#ffc90e';
+        var ERROR_COLOUR = '#FF00FF';
+
+        var RAW_SIZE = 4;
+        var SIZE = scale * RAW_SIZE;
+
+        function GetFill(goal, ch) {
+          ch = ch.toLowerCase();
+          if (ch == '#') return WALL;
+
+          if (goal) {
+            if (ch == 'r') return GOAL_RED;
+            if (ch == 'y') return GOAL_YELLOW;
+            if (ch == 'b') return GOAL_BLUE;
+          } else {
+            if (ch == 'r') return RED;
+            if (ch == 'y') return YELLOW;
+            if (ch == 'b') return BLUE;
+          }
+
+          return ERROR_COLOUR;
+        }
+
+        function DrawTile(r, c, goal, tile) {
+          if (tile == '.') return false;
+
+          ctx.beginPath();
+          ctx.rect(SIZE * c, SIZE * r, SIZE, SIZE);
+          ctx.fillStyle = GetFill(goal, tile);
+          ctx.fill();
+          return true;
+        }
+
         function DrawGame() {
           SetCentreText("");
+
+          for (var r = 0; r < game_height; ++r) {
+            for (var c = 0; c < game_width; ++c) {
+              DrawTile(r,c,false,blocks[r][c]) || DrawTile(r,c,true,goals[r][c]);
+            }
+          }
         }
 
         function Draw() {
-          ctx.fillStyle = "black";
+          ctx.fillStyle = "white";
           ctx.fillRect(0, 0, width, height);
 
           if (game_duration != undefined) {
@@ -193,9 +260,9 @@
       });
     </script>
   </head>
-  <body>
+  <body style="background: #ADD8E6">
     <table id="centretable" style="position:fixed; left:0px; top:0px; pointer-events: none; z-index: 1;">
-      <tr><td id="centretext" align="center" style="color:white;">placeholder a very long string indeed</td></tr>
+      <tr><td id="centretext" align="center" style="color:black;">placeholder a very long string indeed</td></tr>
     </table>
     <canvas id="draw" style="position:fixed; left:0px; top:0px; z-index:0;">
     </canvas>
