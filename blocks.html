@@ -3,6 +3,7 @@
     <title>Blocks</title>
 
     <script type="text/javascript" src="jquery-1.3.2.min.js"></script>
+    <script type="text/javascript" src="sprintf-0.7-beta1.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,6 +11,9 @@
 
     <script type="text/javascript">
       $(window).load(function(){
+        // Offer to reload the page on update.
+        // FIXME: This often asks for a reload twice. Sometimes the user ends
+        // up seeing the old page.
         $(window.applicationCache).bind('updateready', function(e){
           if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
             window.applicationCache.swapCache();
@@ -18,7 +22,6 @@
             }
           }
         });
-
 
         $("#draw").bind("touchstart", function(e){
           e.preventDefault();
@@ -52,336 +55,58 @@
           x *= retina;
           y *= retina;
 
-          for (var i = 0; i < 12; i++) {
-            var r = i % nrows;
-            var c = Math.floor(i / nrows);
-
-            var leftX = (c + 1) * hmargin + c * cardWidth;
-            var rightX = leftX + cardWidth;
-            var topY = (r + 1) * vmargin + r * cardHeight;
-            var bottomY = topY + cardHeight;
-
-            if (leftX <= x && x <= rightX &&
-                topY <= y && y <= bottomY) {
-              ClickCard(r, c);
-            }
-          }
+          // FIXME
+          EndGame();
         }
 
-        var qwerty = [
-          "qwer",
-          "asdf",
-          "zxcv",
-        ];
-        $("").keypress(function(e){
+        var KEYCODE_LEFT = 37;
+        var KEYCODE_UP = 38;
+        var KEYCODE_RIGHT = 39;
+        var KEYCODE_DOWN = 40;
+
+        $("").keydown(function(e){
           if (game_start == undefined) {
             StartGame();
             e.preventDefault();
           } else {
-            for (var r = 0; r < 3; r++) {
-              for (var c = 0; c < 4; c++) {
-                if (qwerty[r][c].charCodeAt() == e.charCode) {
-                  ClickCard(r,c);
-                  e.preventDefault();
-                  return;
-                }
-              }
+            var dr, dc, key = e.keyCode;
+            if (key == KEYCODE_LEFT)  dr =  0, dc = -1;
+            if (key == KEYCODE_UP)    dr = -1, dc =  0;
+            if (key == KEYCODE_RIGHT) dr =  0, dc =  1;
+            if (key == KEYCODE_DOWN)  dr =  1, dc =  0;
+
+            if (dr || dc) {
+              e.preventDefault();
+              alert("(" + dr + ", " + dc + ")");
             }
           }
         });
 
-        // util
-        function RandInt(n) {
-          return Math.floor(Math.random()*n);
-        }
-
-        function Shuffle(xs) {
-          for (var i = xs.length-1; i >= 0; i--) {
-            var j = RandInt(i+1);
-
-            if (i != j) {
-              var t = xs[i];
-              xs[i] = xs[j];
-              xs[j] = t;
-            }
-          }
-        }
-
         // game
         var game_start;
         var game_duration;
-        var deck;
-        var table;
-        var selected;
 
         function StartGame() {
           game_start = new Date();
           game_duration = undefined;
 
-          deck = [];
-
-          for (var count = 0; count < 3; count++) {
-            for (var colour = 0; colour < 3; colour++) {
-              for (var fill = 0; fill < 3; fill++) {
-                for (var shape = 0; shape < 3; shape++) {
-                  deck.push([count, colour, fill, shape]);
-                }
-              }
-            }
-          }
-
-          Shuffle(deck);
-
-          table = [];
-          for (var i = 0; i < 9; i++) {
-            table.push(deck.pop());
-          }
-          for (var i = 0; i < 3; i++) {
-            table.push(undefined);
-          }
-
-          selected = [];
-          for (var i = 0; i < 12; i++) {
-            selected.push(false);
-          }
-
-          Deal();
           Draw();
         }
 
         function EndGame() {
           game_duration = new Date() - game_start;
           game_start = undefined;
-        }
-
-        function IsSet(cards) {
-          if (cards.length != 3) {
-            return false;
-          }
-
-          for (var p = 0; p < 4; p++) {
-            var all_different = true;
-            var all_same = true;
-            for (var i = 0; i < 3; i++) {
-              for (var j = i+1; j < 3; j++) {
-                if (cards[i][p] == cards[j][p]) {
-                  all_different = false;
-                } else {
-                  all_same = false;
-                }
-              }
-            }
-            if (!all_different && !all_same) {
-              return false;
-            }
-          }
-
-          return true;
-        }
-
-        function HasSet(cards) {
-          for (var i = 0; i < cards.length; i++) {
-            for (var j = i+1; j < cards.length; j++) {
-              for (var k = j+1; k < cards.length; k++) {
-                if (cards[i] != undefined &&
-                    cards[j] != undefined &&
-                    cards[k] != undefined &&
-                    IsSet([cards[i], cards[j], cards[k]])) {
-                  return true;
-                }
-              }
-            }
-          }
-          return false;
-        }
-
-        function DeselectAll() {
-          for (var j = 0; j < 12; j++) {
-            selected[j] = false;
-          }
-        }
-
-        function Cheat() {
-          DeselectAll();
-
-          for (var i = 0; i < 12; i++) {
-            for (var j = i+1; j < 12; j++) {
-              for (var k = j+1; k < 12; k++) {
-                if (table[i] != undefined &&
-                    table[j] != undefined &&
-                    table[k] != undefined &&
-                    IsSet([table[i], table[j], table[k]])) {
-                  ClickCard(i % nrows, Math.floor(i / nrows));
-                  ClickCard(j % nrows, Math.floor(j / nrows));
-                  ClickCard(k % nrows, Math.floor(k / nrows));
-                  return;
-                }
-              }
-            }
-          }
-
-          alert("No Set");
-        }
-
-        function ClickCard(r, c) {
-          var i = r + nrows*c;
-          selected[i] = !selected[i];
-
-          selected_cards = [];
-          for (var j = 0; j < 12; j++) {
-            if (selected[j]) {
-              selected_cards.push(table[j]);
-            }
-          }
-
-          if (selected_cards.length > 3) {
-            DeselectAll();
-          } else if (selected_cards.length == 3) {
-            if (IsSet(selected_cards)) {
-              for (var j = 0; j < 12; j++) {
-                if (selected[j]) {
-                  table[j] = undefined;
-                }
-              }
-            }
-            DeselectAll();
-          }
 
           Draw();
-          if (!Deal()) {
-            EndGame();
-          }
-          Draw();
         }
-
-        function Deal() {
-          cards = [];
-          new_cards_pos = [];
-
-          for (var j = 0; j < 12; j++) {
-            if (table[j] != undefined) {
-              cards.push(table[j]);
-            }
-          }
-
-          if (cards.length == 12) {
-            return true;
-          }
-
-          while (cards.length < 12 && deck.length > 0) {
-            var rem = 12 - cards.length;
-
-            var start = 0;
-            if (new_cards_pos.length > 0) {
-              start = new_cards_pos[new_cards_pos.length - 1] + 1;
-            }
-            var succeeded = false;
-            for (var j = start; j < deck.length; j++) {
-              cards_prime = cards.concat([deck[j]]);
-
-              var possible = HasSet(cards_prime);
-              if (!possible && rem >= 2) {
-                for (var k = 0; k < deck.length; k++) {
-                  if (k != j && HasSet(cards_prime.concat([deck[j]]))) {
-                    possible = true;
-                    break;
-                  }
-                }
-              }
-              if (!possible && rem >= 3) {
-                for (var k = 0; k < deck.length; k++) {
-                  for (var l = k+1; l < deck.length; l++) {
-                    if (k != j && l != j &&
-                        HasSet(cards_prime.concat([deck[k], deck[l]]))) {
-                      possible = true;
-                      break;
-                    }
-                  }
-                  if (possible) {
-                    break;
-                  }
-                }
-              }
-              if (!possible && rem >= 4) {
-                if (HasSet(deck)) {
-                  possible = true;
-                }
-              }
-
-              if (possible) {
-                cards = cards_prime;
-                new_cards_pos.push(j);
-                succeeded = true;
-                break;
-              }
-            }
-
-            if (!succeeded) {
-              return false;
-            }
-          }
-
-          Shuffle(new_cards_pos);
-          var k = 0;
-          for (var j = 0; j < 12; j++) {
-            if (table[j] == undefined && k < new_cards_pos.length) {
-              table[j] = deck[new_cards_pos[k]];
-              k++;
-            }
-          }
-
-          new_cards_pos.sort();
-          new_cards_pos.reverse();
-          for (var k = 0; k < new_cards_pos.length; k++) {
-            deck.splice(new_cards_pos[k], 1);
-          }
-
-          if (cards.length == 12 && !HasSet(table)) {
-            alert("Sorry, I made a mistake and dealt you cards having no set.");
-          }
-
-          return HasSet(table);
-        }
-
-        // card constants
-        var CIRCLE = 0;
-        var SQUARE = 1;
-        var TRIANGLE = 2;
-
-        var EMPTY = 0;
-        var HASHED = 1;
-        var SOLID = 2;
-
-        var RED = 0;
-        var GREEN = 1;
-        var BLUE = 2;
 
         // graphics
         var scale, retina, width, height, ncols, nrows, style_width, style_height;
 
         // make it work on iphones and ipads
-        var base_hmargin = 18;
-        var base_vmargin = 18;
-        var horizontal_twos = false;
-        var blackberry_circles = false;
         retina = 1;
         userAgent = navigator.userAgent.toLowerCase();
-        if (true || userAgent.indexOf('nexus s ') != -1) {
-          // Nexus S
-          scale = 1;
-
-          width = scale*480;
-
-          // Can only hide the URL bar via scroll hack. Try without for now.
-          var url_bar_height = 200;
-          height = scale*(800 - url_bar_height);
-
-          base_hmargin = 57;
-          base_vmargin = 41;
-
-          ncols = 3;
-          nrows = 4;
-        } else if (userAgent.indexOf('blackberry 9800') != -1) {
+        if (userAgent.indexOf('blackberry 9800') != -1) {
           // BlackBerry Torch
           scale = 1;
 
@@ -390,24 +115,6 @@
           // Hiding the URL bar is not possible, so we cannot take advantage
           // of the full 480px screen height.
           height = scale*403;
-
-          // To get the right card width, base_hmargin=27 is the right choice,
-          // but then the sizes of vertical margins and horizontal margins
-          // would be very different.
-          base_hmargin = 20;
-
-          // To get the right card height, base_vmargin=2 is the right choice,
-          // but then the margins are very small. The setting here is a
-          // reasonable compromise.
-          base_vmargin = 15;
-
-          // Since the cards are wider than tall, show 2s horizontally.
-          horizontal_twos = true;
-
-          blackberry_circles = true;
-
-          ncols = 3;
-          nrows = 4;
         } else if (userAgent.indexOf('ipad') != -1) {
           // iPad
           retina = 2;
@@ -415,12 +122,6 @@
 
           width = scale*512;
           height = scale*384;
-
-          base_hmargin = 36;
-          base_vmargin = 23;
-
-          ncols = 4;
-          nrows = 3;
         } else if (userAgent.indexOf('iphone') != -1) {
           // iPhone
           retina = 2;
@@ -428,18 +129,12 @@
 
           width = scale*320;
           height = scale*480;
-
-          ncols = 3;
-          nrows = 4;
         } else {
           // All others (e.g. laptop)
           scale = 1;
 
           width = scale*420;
           height = scale*364;
-
-          ncols = 4;
-          nrows = 3;
         }
 
         // By making the coordinate space of the CSS twice as large as its
@@ -459,44 +154,6 @@
 
         var ctx = canvas.getContext("2d");
 
-        var hmargin = scale*base_hmargin;
-        var vmargin = scale*base_vmargin;
-        var cardWidth = (width-hmargin)/ncols-hmargin;
-        var cardHeight = (height-vmargin)/nrows-vmargin;
-        var selectMargin = scale*3;
-        var strokeWidth = scale*1;
-        var emptyStrokeWidth = 2*strokeWidth;
-        var hashHeight = scale*1;
-        var hashRepeat = 2*hashHeight;
-
-        var circleRadius = scale*14 - strokeWidth/2;
-        var squareSize = 1.75 * (circleRadius + strokeWidth/2) - strokeWidth;
-        var trianglePoke = 1.15 * (circleRadius + strokeWidth/2) - strokeWidth/2;
-        var arrangementPoke = scale*22.5;
-        var tripleOffset = scale * -2.5;
-        var triangleOffset = scale*2.5;
-
-        var red = "#FF2300";
-        var green = "#519600";
-        var blue = "#A101A6";
-
-        var redhashcanvas = $("#drawredhash")[0];
-        var greenhashcanvas = $("#drawgreenhash")[0];
-        var bluehashcanvas = $("#drawbluehash")[0];
-        redhashcanvas.height = greenhashcanvas.height = bluehashcanvas.height =
-            hashRepeat;
-
-        function MakeHash(cvs, colour) {
-          var ctx = cvs.getContext("2d");
-          ctx.beginPath();
-          ctx.rect(0,0,1,hashHeight);
-          ctx.fillStyle = colour;
-          ctx.fill();
-        }
-        MakeHash(redhashcanvas, red);
-        MakeHash(greenhashcanvas, green);
-        MakeHash(bluehashcanvas, blue);
-        
         function SetCentreText(text) {
           $("#centretext")[0].innerHTML = text;
         }
@@ -508,148 +165,15 @@
           var minutes = Math.floor(seconds / 60);
           seconds -= 60 * minutes;
 
-          SetCentreText("You won in " + minutes + ":" + seconds + "." + deciseconds + ". Click to restart.");
+          SetCentreText(sprintf("You win in %d:%02d.%d. Click to restart.", minutes, seconds, deciseconds));
         }
 
         function DrawIntro() {
           SetCentreText("Click to begin.");
         }
 
-        function DrawTable() {
+        function DrawGame() {
           SetCentreText("");
-          for (var i = 0; i < 12; i++) {
-            var r = i % nrows;
-            var c = Math.floor(i / nrows);
-
-            var card = table[i];
-            if (card == undefined) continue;
-
-            var count = card[0];
-            var colour = card[1];
-            var fill = card[2];
-            var shape = card[3];
-
-            function DrawCircle(ctx, x, y, r) {
-              if (blackberry_circles) {
-                // For some reason, the Torch cannot draw full circles, so we draw
-                // two half-circles instead.
-                ctx.arc(x, y, r, 0, Math.PI, false);
-                ctx.arc(x, y, r, Math.PI, 2*Math.PI, false);
-              } else {
-                ctx.arc(x, y, r, 0, 2*Math.PI, false);
-              }
-            }
-
-            function DrawShapeAt(x, y) {
-              ctx.beginPath();
-              ctx.save();
-
-              x = Math.round(x);
-              y = Math.round(y);
-              ctx.translate(x, y);
-
-              if (shape == CIRCLE) {
-                var r = scale*Math.round(circleRadius/scale);
-                DrawCircle(ctx, strokeWidth/2, strokeWidth/2, r);
-              } else if (shape == SQUARE) {
-                var shift = scale*Math.round((squareSize - strokeWidth)/(2*scale));
-                ctx.rect(-shift - strokeWidth/2, -shift - strokeWidth/2,
-                         2*(shift + strokeWidth), 2*(shift + strokeWidth));
-              } else { // shape == TRIANGLE
-                var y2 = scale*Math.round((triangleOffset - trianglePoke)/scale);
-
-                // TODO: This hack no longer makes sense, but removing it
-                // makes triangles look worse.
-                y2 = scale * hashRepeat * Math.ceil((y2 / hashRepeat)/scale);
-
-                y2 -= strokeWidth/2;
-                var poke = scale * Math.round((3*trianglePoke/2)/scale);
-
-                var dx = scale * Math.round((trianglePoke*Math.sqrt(3)/2)/scale);
-
-                ctx.moveTo(0, y2);
-                ctx.lineTo(-dx+strokeWidth/2, y2 + poke);
-                ctx.lineTo(dx-strokeWidth/2, y2 + poke);
-                ctx.closePath();
-              }
-
-              if (fill == EMPTY) {
-                ctx.lineWidth = emptyStrokeWidth;
-              } else {
-                ctx.lineWidth = strokeWidth;
-              }
-
-              if (colour == RED) {
-                ctx.strokeStyle = red;
-              } else if (colour == GREEN) {
-                ctx.strokeStyle = green;
-              } else { // colour == BLUE
-                ctx.strokeStyle = blue;
-              }
-
-              if (fill == EMPTY) {
-                ctx.stroke();
-              } else if (fill == HASHED) {
-                if (colour == RED) {
-                  ctx.fillStyle = ctx.createPattern(redhashcanvas, 'repeat');
-                } else if (colour == GREEN) {
-                  ctx.fillStyle = ctx.createPattern(greenhashcanvas, 'repeat');
-                } else { // colour == BLUE
-                  ctx.fillStyle = ctx.createPattern(bluehashcanvas, 'repeat');
-                }
-
-                ctx.fill();
-                ctx.stroke();
-              } else { // fill == SOLID
-                if (colour == RED) {
-                  ctx.fillStyle = red;
-                } else if (colour == GREEN) {
-                  ctx.fillStyle = green;
-                } else { // colour == BLUE
-                  ctx.fillStyle = blue;
-                }
-
-                ctx.fill();
-                ctx.stroke();
-              }
-
-              ctx.restore();
-            } // DrawShapeAt
-
-            var leftX = (c + 1) * hmargin + c * cardWidth;
-            var topY = (r + 1) * vmargin + r * cardHeight;
-
-            var centreX = leftX + cardWidth/2;
-            var centreY = topY + cardHeight/2;
-
-            if (selected[i]) {
-              ctx.fillStyle = "red";
-              ctx.fillRect(leftX-selectMargin, topY-selectMargin, cardWidth+2*selectMargin,
-                           cardHeight+2*selectMargin);
-            }
-
-            ctx.fillStyle = "white";
-            ctx.fillRect(Math.round(leftX), Math.round(topY),
-                         Math.round(cardWidth), Math.round(cardHeight));
-
-            if (count == 0) {
-              DrawShapeAt(centreX, centreY);
-            } else if (count == 1) {
-              if (horizontal_twos) {
-                // Draw 2s horizontally separated.
-                DrawShapeAt(centreX - arrangementPoke, centreY);
-                DrawShapeAt(centreX + arrangementPoke, centreY);
-              } else {
-                // Draw 2s vertically separated.
-                DrawShapeAt(centreX, centreY - arrangementPoke);
-                DrawShapeAt(centreX, centreY + arrangementPoke);
-              }
-            } else { // count == 2
-              DrawShapeAt(centreX, centreY + tripleOffset + arrangementPoke);
-              DrawShapeAt(centreX + arrangementPoke*Math.sqrt(3)/2, centreY + tripleOffset - arrangementPoke/2);
-              DrawShapeAt(centreX - arrangementPoke*Math.sqrt(3)/2, centreY + tripleOffset - arrangementPoke/2);
-            }
-          }
         }
 
         function Draw() {
@@ -661,7 +185,7 @@
           } else if (game_start == undefined) {
             DrawIntro();
           } else {
-            DrawTable();
+            DrawGame();
           }
         }
 
@@ -675,8 +199,5 @@
     </table>
     <canvas id="draw" style="position:fixed; left:0px; top:0px; z-index:0;">
     </canvas>
-    <canvas id="drawbluehash" width="1"></canvas>
-    <canvas id="drawgreenhash" width="1"></canvas>
-    <canvas id="drawredhash" width="1"></canvas>
   </body>
 </html>
