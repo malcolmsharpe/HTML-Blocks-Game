@@ -9,8 +9,6 @@ Game graphics:
 - Title & author.
 
 Gameplay:
-- Arrow keys causing movement.
-- Movement resolution.
 - Win condition.
 
 Mobile:

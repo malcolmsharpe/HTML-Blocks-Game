@@ -11,6 +11,17 @@ $(window).load(function(){
     }
   });
 
+  // util
+  function IsUpper(ch) {
+    return !!(/[A-Z]/.exec(ch));
+  }
+
+  function Iota(n) {
+    var ret = [];
+    for (var i = 0; i < n; ++i) ret[i] = i;
+    return ret;
+  }
+
   // input
   $("#draw").bind("touchstart", function(e){
     e.preventDefault();
@@ -84,7 +95,7 @@ $(window).load(function(){
 
       if (dr || dc) {
         e.preventDefault();
-        // TODO
+        Move(dr, dc);
       }
     }
   });
@@ -110,8 +121,92 @@ $(window).load(function(){
   var blocks;
   var goals;
 
-  function CleanLevelText(text) {
-    return $.map($.trim(text).split('\n'), $.trim);
+  function Move(dr, dc) {
+    // find smiley
+    var smiley_r, smiley_c;
+    for (var r = 0; r < game_height; ++r) {
+      for (var c = 0; c < game_width; ++c) {
+        if (IsUpper(blocks[r][c])) {
+          smiley_r = r;
+          smiley_c = c;
+        }
+      }
+    }
+
+    // propagate stuckness
+    var rows = Iota(game_height), cols = Iota(game_width);
+    if (dr == 1) rows.reverse();
+    if (dc == 1) cols.reverse();
+
+    var stuck = [];
+
+    $.each(rows, function(ir, r) {
+      stuck[r] = [];
+      $.each(cols, function(ic, c) {
+        var ch = blocks[r][c];
+        stuck[r][c] = ch != '.' && (ch == '#' || stuck[r+dr][c+dc]);
+      });
+    });
+
+    // propagate movement
+    var mark = [];
+    $.each(rows, function(ir, r) {
+      mark[r] = [];
+    });
+
+    var q = [];
+    function pushq(r,c) {
+      if (!mark[r][c] && !stuck[r][c] && blocks[r][c] != '.') {
+        q.push([r,c]);
+        mark[r][c] = true;
+      }
+    }
+
+    var K = 4;
+    var DR = [1, 0, -1, 0];
+    var DC = [0, 1, 0, -1];
+
+    pushq(smiley_r, smiley_c);
+    while (q.length) {
+      var cur = q.pop();
+      var r = cur[0], c = cur[1];
+
+      for (var k = 0; k < K; ++k) {
+        var r2 = r + DR[k], c2 = c + DC[k];
+
+        var me = blocks[r][c].toLowerCase();
+        var him = blocks[r2][c2].toLowerCase();
+
+        var sticks = false;
+        if (DR[k] == dr && DC[k] == dc) sticks = true;
+        if (me == 'r' && him == 'r') sticks = true;
+        if (me == 'y' && him == 'y') sticks = true;
+        if (me == 'y' && him == 'b') sticks = true;
+
+        if (sticks) pushq(r2,c2);
+      }
+    }
+
+    // execute movement
+    $.each(rows, function(ir, r) {
+      $.each(cols, function(ic, c) {
+        if (mark[r][c]) {
+          // assert blocks[r+dr][c+dc] == '.'
+          blocks[r+dr][c+dc] = blocks[r][c];
+          blocks[r][c] = '.';
+        }
+      });
+    });
+
+    Draw();
+  }
+
+  function ParseLevelText(text) {
+    return $.map($.map($.trim(text).split('\n'), $.trim), function(s) {
+      // jQuery.map flattens returned arrays, so we need to wrap in
+      // a length-1 array to get desired behaviour.
+      return [s.split('')];
+    });
   }
 
   function StartGame(i,j) {
@@ -129,8 +224,8 @@ $(window).load(function(){
     author = level.find('author').text();
     game_width = parseInt(level.find('width').text());
     game_height = parseInt(level.find('height').text());
-    blocks = CleanLevelText(level.find('blocks').text());
-    goals = CleanLevelText(level.find('goals').text());
+    blocks = ParseLevelText(level.find('blocks').text());
+    goals = ParseLevelText(level.find('goals').text());
 
     Draw();
   }
