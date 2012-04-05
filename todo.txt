@@ -1,3 +1,6 @@
+Level selection graphics:
+- Checkmark for completed levels.
+
 Game graphics:
 - Transparency of blocks.
 - Checker pattern for goals.
@@ -9,7 +12,6 @@ Gameplay:
 - Arrow keys causing movement.
 - Movement resolution.
 - Win condition.
-- Escape & R keys.
 
 Mobile:
 - Graphics layout.

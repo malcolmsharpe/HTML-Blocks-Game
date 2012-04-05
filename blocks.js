@@ -56,25 +56,27 @@ $(window).load(function(){
     y -= i * incr;
     if (x >= LS_LEVEL_SIZE || y >= LS_LEVEL_SIZE) return;
 
-    var level_name = level_names[i][j];
-    if (level_name) {
-      StartGame(level_name);
-    }
+    StartGame(i,j);
   }
 
   function HandleGameClick(x,y) {
-    // FIXME
-    EndGame();
+    // TODO
   }
 
+  var KEYCODE_ESC = 27;
   var KEYCODE_LEFT = 37;
   var KEYCODE_UP = 38;
   var KEYCODE_RIGHT = 39;
   var KEYCODE_DOWN = 40;
+  var KEYCODE_R = 82;
 
   $("").keydown(function(e){
     if (game_screen == SCREEN_GAME) {
       var dr, dc, key = e.keyCode;
+
+      if (key == KEYCODE_ESC) AbortGame(), e.preventDefault();
+      if (key == KEYCODE_R) ResetGame(), e.preventDefault();
+
       if (key == KEYCODE_LEFT)  dr =  0, dc = -1;
       if (key == KEYCODE_UP)    dr = -1, dc =  0;
       if (key == KEYCODE_RIGHT) dr =  0, dc =  1;
@@ -99,6 +101,8 @@ $(window).load(function(){
   var game_start;
   var game_duration;
 
+  var level_i;
+  var level_j;
   var level_name;
   var author;
   var game_width;
@@ -110,12 +114,17 @@ $(window).load(function(){
     return $.map($.trim(text).split('\n'), $.trim);
   }
 
-  function StartGame(name) {
+  function StartGame(i,j) {
+    var name = level_names[i][j];
+    if (!name) return;
+
     game_screen = SCREEN_GAME;
     game_start = new Date();
     game_duration = undefined;
 
     var level = $(levels_data).find('level[name='+name+']');
+    level_i = i;
+    level_j = j;
     level_name = level.attr('name');
     author = level.find('author').text();
     game_width = parseInt(level.find('width').text());
@@ -124,6 +133,14 @@ $(window).load(function(){
     goals = CleanLevelText(level.find('goals').text());
 
     Draw();
+  }
+
+  function ResetGame() {
+    StartGame(level_i, level_j);
+  }
+
+  function AbortGame() {
+    EndGame();
   }
 
   function EndGame() {
