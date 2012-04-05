@@ -7,9 +7,11 @@ Game graphics:
 - Size.
 - Smiley.
 - Title & author.
+- Sliding animation.
+- Pause before ending game.
 
 Gameplay:
-- Win condition.
+- Win condition (advacing to next level).
 
 Mobile:
 - Graphics layout.
