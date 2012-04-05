@@ -15,3 +15,7 @@ Level selection:
     Lefttick top at (22.5px, 23.5px)
     Bottom at (25.5px, 26.5px)
     Righttick top at roughly (34.5px, 11.5px)
+
+In-Game:
+  Colours:
+    Blocks are drawn with transparency.

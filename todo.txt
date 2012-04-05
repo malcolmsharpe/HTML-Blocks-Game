@@ -1,5 +1,4 @@
 Game graphics:
-- Transparency of blocks.
 - Checker pattern for goals.
 - Size.
 - Smiley.

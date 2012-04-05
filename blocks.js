@@ -348,9 +348,11 @@ $(window).load(function(){
 
   var BLACK = '#000000';
   var WALL = '#c0c0c0';
-  var RED = '#ff3737';
-  var YELLOW = '#ffda37';
-  var BLUE = '#5f66f5';
+
+  var RED = 'rgba(255, 0, 0, 0.78)';
+  var YELLOW = 'rgba(255, 207, 0, 0.78)';
+  var BLUE = 'rgba(51, 59, 242, 0.78)';
+
   var GOAL_RED = '#c00000';
   var GOAL_BLUE = '#000080';
   var GOAL_YELLOW = '#ffc90e';
@@ -430,14 +432,17 @@ $(window).load(function(){
     return ERROR_COLOUR;
   }
 
-  function DrawTile(r, c, goal, tile) {
-    if (tile == '.') return false;
+  function DrawTile(r, c, goal) {
+    var tile;
+    if (goal) tile = goals[r][c];
+    else tile = blocks[r][c];
+
+    if (tile == '.') return;
 
     ctx.beginPath();
     ctx.rect(SIZE * c, SIZE * r, SIZE, SIZE);
     ctx.fillStyle = GetFill(goal, tile);
     ctx.fill();
-    return true;
   }
 
   function DrawGame() {
@@ -445,7 +450,8 @@ $(window).load(function(){
 
     for (var r = 0; r < game_height; ++r) {
       for (var c = 0; c < game_width; ++c) {
-        DrawTile(r,c,false,blocks[r][c]) || DrawTile(r,c,true,goals[r][c]);
+        DrawTile(r,c,true);
+        DrawTile(r,c,false);
       }
     }
   }
