@@ -1,6 +1,6 @@
 $(window).load(function(){
   // Offer to reload the page on update.
-  // FIXME: This often asks for a reload twice. Sometimes the user ends
+  // FIXME: In iOS, this often asks for a reload twice. Sometimes the user ends
   // up seeing the old page.
   $(window.applicationCache).bind('updateready', function(e){
     if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
