@@ -10,6 +10,3 @@ Game graphics:
 Mobile:
 - Graphics layout.
 - Input scheme.
-
-Dev environment:
-- Smart syncing to server. (rsync?)
