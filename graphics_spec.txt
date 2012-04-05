@@ -9,3 +9,9 @@ Level selection:
   Left margin: 64px
   Levels: 32px x 32px
   Inner margins: 16px
+
+  Checkmark:
+    Lefttick thickness ~3px
+    Lefttick top at (22.5px, 23.5px)
+    Bottom at (25.5px, 26.5px)
+    Righttick top at roughly (34.5px, 11.5px)

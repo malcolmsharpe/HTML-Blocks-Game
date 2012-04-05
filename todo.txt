@@ -1,6 +1,3 @@
-Level selection graphics:
-- Checkmark for completed levels.
-
 Game graphics:
 - Transparency of blocks.
 - Checker pattern for goals.
@@ -13,3 +10,6 @@ Game graphics:
 Mobile:
 - Graphics layout.
 - Input scheme.
+
+Dev environment:
+- Smart syncing to server. (rsync?)

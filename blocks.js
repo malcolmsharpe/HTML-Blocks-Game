@@ -108,6 +108,7 @@ $(window).load(function(){
 
   var levels_data;
   var level_names;
+  var complete;
 
   var level_i;
   var level_j;
@@ -129,6 +130,7 @@ $(window).load(function(){
     }
 
     if (!won) return;
+    complete[level_i][level_j] = true;
     if (StartGame(level_i, level_j+1)) return;
     EndGame();
   }
@@ -268,8 +270,10 @@ $(window).load(function(){
     success: function(data) {
       levels_data = data;
       level_names = [];
+      complete = [];
       $(data).find('world').each(function(i, world) {
         level_names[i] = [];
+        complete[i] = [];
         $(world).find('level').each(function(j, level) {
           level_names[i][j] = $(level).attr('name');
         });
@@ -357,6 +361,15 @@ $(window).load(function(){
   var LS_INNER_MARGIN = scale * 16;
   var LS_TEXT_COLOUR = "#FFFFFF";
 
+  var LS_CK_WIDTH = scale * 3;
+  var LS_CK_LEFT_TOP_X = scale * 22.5;
+  var LS_CK_LEFT_TOP_Y = scale * 23.5;
+  var LS_CK_BOTTOM_X = scale * 25.5;
+  var LS_CK_BOTTOM_Y = scale * 26.5;
+  var LS_CK_RIGHT_TOP_X = scale * 33.5;
+  var LS_CK_RIGHT_TOP_Y = scale * 13.5;
+  var LS_CK_COLOUR = '#000000';
+
   function GetWorldColour(i) {
     var colour_name = $(levels_data).find('world').slice(i).attr('color');
     if (colour_name == 'red') return RED;
@@ -382,6 +395,17 @@ $(window).load(function(){
         ctx.fillStyle = LS_TEXT_COLOUR;
         var level_text = sprintf("%d-%d", i+1, j+1);
         ctx.fillText(level_text, x_offset, y_offset);
+
+        if (complete[i][j]) {
+          ctx.beginPath();
+          ctx.moveTo(x_offset+LS_CK_LEFT_TOP_X, y_offset+LS_CK_LEFT_TOP_Y);
+          ctx.lineTo(x_offset+LS_CK_BOTTOM_X, y_offset+LS_CK_BOTTOM_Y);
+          ctx.lineTo(x_offset+LS_CK_RIGHT_TOP_X, y_offset+LS_CK_RIGHT_TOP_Y);
+          ctx.lineWidth = LS_CK_WIDTH;
+          ctx.lineCap = 'square';
+          ctx.strokeStyle = LS_CK_COLOUR;
+          ctx.stroke();
+        }
       });
     });
   }
