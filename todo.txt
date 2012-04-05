@@ -1,0 +1,16 @@
+Game graphics:
+- Transparency of blocks.
+- Checker pattern for goals.
+- Size.
+- Smiley.
+- Title & author.
+
+Gameplay:
+- Arrow keys causing movement.
+- Movement resolution.
+- Win condition.
+- Escape & R keys.
+
+Mobile:
+- Graphics layout.
+- Input scheme.

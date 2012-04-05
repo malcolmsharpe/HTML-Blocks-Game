@@ -5,37 +5,30 @@ $(window).load(function(){
   $(window.applicationCache).bind('updateready', function(e){
     if (window.applicationCache.status == window.applicationCache.UPDATEREADY) {
       window.applicationCache.swapCache();
-      if (confirm("Set has been updated. Load new app?")) {
+      if (confirm("Update detected. Load new app?")) {
         window.location.reload();
       }
     }
   });
 
+  // input
   $("#draw").bind("touchstart", function(e){
     e.preventDefault();
 
-    if (game_start == undefined) {
-      StartGame();
-    } else {
-      e = e.originalEvent;
-      for (var i = 0; i < e.changedTouches.length; i++) {
-        var t = e.changedTouches[i];
-        HandleGameClick(e.changedTouches[i]);
-      }
+    e = e.originalEvent;
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      var t = e.changedTouches[i];
+      HandleClick(e.changedTouches[i]);
     }
   });
 
   $("#draw").click(function(e){
     e.preventDefault();
 
-    if (game_start == undefined) {
-      StartGame();
-    } else {
-      HandleGameClick(e);
-    }
+    HandleClick(e);
   });
 
-  function HandleGameClick(e) {
+  function HandleClick(e) {
     var x = e.clientX - canvas.offsetLeft;
     var y = e.clientY - canvas.offsetTop;
 
@@ -43,6 +36,33 @@ $(window).load(function(){
     x *= retina;
     y *= retina;
 
+    if (game_screen == SCREEN_LEVEL_SELECTION) {
+      HandleLevelSelectionClick(x,y);
+    } else if (game_screen == SCREEN_GAME) {
+      HandleGameClick(x,y);
+    }
+  }
+
+  function HandleLevelSelectionClick(x,y) {
+    x -= LS_OUTER_MARGIN;
+    y -= LS_OUTER_MARGIN;
+    if (x<0 || y<0) return;
+
+    var incr = LS_LEVEL_SIZE + LS_INNER_MARGIN;
+    var j = Math.floor(x / incr);
+    var i = Math.floor(y / incr);
+
+    x -= j * incr;
+    y -= i * incr;
+    if (x >= LS_LEVEL_SIZE || y >= LS_LEVEL_SIZE) return;
+
+    var level_name = level_names[i][j];
+    if (level_name) {
+      StartGame(level_name);
+    }
+  }
+
+  function HandleGameClick(x,y) {
     // FIXME
     EndGame();
   }
@@ -53,10 +73,7 @@ $(window).load(function(){
   var KEYCODE_DOWN = 40;
 
   $("").keydown(function(e){
-    if (game_start == undefined) {
-      StartGame();
-      e.preventDefault();
-    } else {
+    if (game_screen == SCREEN_GAME) {
       var dr, dc, key = e.keyCode;
       if (key == KEYCODE_LEFT)  dr =  0, dc = -1;
       if (key == KEYCODE_UP)    dr = -1, dc =  0;
@@ -71,22 +88,70 @@ $(window).load(function(){
   });
 
   // game
+  var SCREEN_LOADING = 0;
+  var SCREEN_LEVEL_SELECTION = 1;
+  var SCREEN_GAME = 2;
+  var game_screen = SCREEN_LOADING;
+
+  var levels_data;
+  var level_names;
+
   var game_start;
   var game_duration;
 
-  function StartGame() {
+  var level_name;
+  var author;
+  var game_width;
+  var game_height;
+  var blocks;
+  var goals;
+
+  function CleanLevelText(text) {
+    return $.map($.trim(text).split('\n'), $.trim);
+  }
+
+  function StartGame(name) {
+    game_screen = SCREEN_GAME;
     game_start = new Date();
     game_duration = undefined;
+
+    var level = $(levels_data).find('level[name='+name+']');
+    level_name = level.attr('name');
+    author = level.find('author').text();
+    game_width = parseInt(level.find('width').text());
+    game_height = parseInt(level.find('height').text());
+    blocks = CleanLevelText(level.find('blocks').text());
+    goals = CleanLevelText(level.find('goals').text());
 
     Draw();
   }
 
   function EndGame() {
+    game_screen = SCREEN_LEVEL_SELECTION;
     game_duration = new Date() - game_start;
     game_start = undefined;
 
     Draw();
   }
+
+  // Load level data.
+  $.ajax({
+    url: 'levels.xml',
+    dataType: 'xml',
+    success: function(data) {
+      levels_data = data;
+      level_names = [];
+      $(data).find('world').each(function(i, world) {
+        level_names[i] = [];
+        $(world).find('level').each(function(j, level) {
+          level_names[i][j] = $(level).attr('name');
+        });
+      });
+
+      game_screen = SCREEN_LEVEL_SELECTION;
+      Draw();
+    }
+  });
 
   // graphics
   var scale, retina, width, height, ncols, nrows, style_width, style_height;
@@ -121,8 +186,8 @@ $(window).load(function(){
     // All others (e.g. laptop)
     scale = 1;
 
-    width = scale*420;
-    height = scale*364;
+    width = scale*840;
+    height = scale*525;
   }
 
   // By making the coordinate space of the CSS twice as large as its
@@ -147,6 +212,7 @@ $(window).load(function(){
   }
 
   function DrawScore() {
+    // FIXME: This is currently unused.
     var deciseconds = Math.round(game_duration / 100);
     var seconds = Math.floor(deciseconds / 10);
     deciseconds -= 10 * seconds;
@@ -156,30 +222,9 @@ $(window).load(function(){
     SetCentreText(sprintf("You win in %d:%02d.%d. Click to restart.", minutes, seconds, deciseconds));
   }
 
-  function DrawIntro() {
-    SetCentreText("Click to begin.");
+  function DrawLoading() {
+    SetCentreText("Loading levels...");
   }
-
-  var level_name = 'Meet the smiley';
-  var author = 'David Rhee';
-  var game_width = 11;
-  var game_height = 6;
-  var blocks = [
-    '###########',
-    '#....#....#',
-    '#.R..#....#',
-    '#....#....#',
-    '#.........#',
-    '###########'
-  ];
-  var goals = [
-    '###########',
-    '#....#....#',
-    '#....#..r.#',
-    '#....#....#',
-    '#.........#',
-    '###########'
-  ];
 
   var BLACK = '#000000';
   var WALL = '#c0c0c0';
@@ -190,6 +235,40 @@ $(window).load(function(){
   var GOAL_BLUE = '#000080';
   var GOAL_YELLOW = '#ffc90e';
   var ERROR_COLOUR = '#FF00FF';
+
+  var LS_OUTER_MARGIN = scale * 64;
+  var LS_LEVEL_SIZE = scale * 32;
+  var LS_INNER_MARGIN = scale * 16;
+  var LS_TEXT_COLOUR = "#FFFFFF";
+
+  function GetWorldColour(i) {
+    var colour_name = $(levels_data).find('world').slice(i).attr('color');
+    if (colour_name == 'red') return RED;
+    if (colour_name == 'yellow') return YELLOW;
+    if (colour_name == 'blue') return BLUE;
+    return ERROR_COLOUR;
+  }
+
+  function DrawLevelSelection() {
+    SetCentreText("");
+
+    $.each(level_names, function(i) {
+      $.each(level_names[i], function(j) {
+        ctx.beginPath();
+        var x_offset = LS_OUTER_MARGIN + j * (LS_LEVEL_SIZE + LS_INNER_MARGIN);
+        var y_offset = LS_OUTER_MARGIN + i * (LS_LEVEL_SIZE + LS_INNER_MARGIN);
+        ctx.rect(x_offset, y_offset, LS_LEVEL_SIZE, LS_LEVEL_SIZE);
+        ctx.fillStyle = GetWorldColour(i);
+        ctx.fill();
+
+        ctx.font = 'bold 12px "courier new", monospace';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = LS_TEXT_COLOUR;
+        var level_text = sprintf("%d-%d", i+1, j+1);
+        ctx.fillText(level_text, x_offset, y_offset);
+      });
+    });
+  }
 
   var RAW_SIZE = 4;
   var SIZE = scale * RAW_SIZE;
@@ -235,11 +314,11 @@ $(window).load(function(){
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, width, height);
 
-    if (game_duration != undefined) {
-      DrawScore();
-    } else if (game_start == undefined) {
-      DrawIntro();
-    } else {
+    if (game_screen == SCREEN_LOADING) {
+      DrawLoading();
+    } else if (game_screen == SCREEN_LEVEL_SELECTION) {
+      DrawLevelSelection();
+    } else if (game_screen == SCREEN_GAME) {
       DrawGame();
     }
   }

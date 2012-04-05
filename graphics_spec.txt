@@ -1,0 +1,11 @@
+** Original
+
+Playing area:
+  Width: 840px
+  Height: 525px
+
+Level selection:
+  Top margin: 64px
+  Left margin: 64px
+  Levels: 32px x 32px
+  Inner margins: 16px
