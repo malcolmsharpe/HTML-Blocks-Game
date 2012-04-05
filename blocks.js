@@ -109,9 +109,6 @@ $(window).load(function(){
   var levels_data;
   var level_names;
 
-  var game_start;
-  var game_duration;
-
   var level_i;
   var level_j;
   var level_name;
@@ -120,6 +117,21 @@ $(window).load(function(){
   var game_height;
   var blocks;
   var goals;
+
+  function CheckWin() {
+    var won = true;
+    for (var r = 0; r < game_height; ++r) {
+      for (var c = 0; c < game_width; ++c) {
+        if (goals[r][c] != '.' && goals[r][c].toLowerCase() != blocks[r][c].toLowerCase()) {
+          won = false;
+        }
+      }
+    }
+
+    if (!won) return;
+    if (StartGame(level_i, level_j+1)) return;
+    EndGame();
+  }
 
   function Move(dr, dc) {
     // find smiley
@@ -199,6 +211,8 @@ $(window).load(function(){
     });
 
     Draw();
+
+    CheckWin();
   }
 
   function ParseLevelText(text) {
@@ -210,12 +224,13 @@ $(window).load(function(){
   }
 
   function StartGame(i,j) {
+    // Try to start a game in world i level j.
+    // Return true if the level exists, otherwise false.
+
     var name = level_names[i][j];
-    if (!name) return;
+    if (!name) return false;
 
     game_screen = SCREEN_GAME;
-    game_start = new Date();
-    game_duration = undefined;
 
     var level = $(levels_data).find('level[name='+name+']');
     level_i = i;
@@ -228,6 +243,8 @@ $(window).load(function(){
     goals = ParseLevelText(level.find('goals').text());
 
     Draw();
+
+    return true;
   }
 
   function ResetGame() {
@@ -240,8 +257,6 @@ $(window).load(function(){
 
   function EndGame() {
     game_screen = SCREEN_LEVEL_SELECTION;
-    game_duration = new Date() - game_start;
-    game_start = undefined;
 
     Draw();
   }
@@ -321,17 +336,6 @@ $(window).load(function(){
 
   function SetCentreText(text) {
     $("#centretext")[0].innerHTML = text;
-  }
-
-  function DrawScore() {
-    // FIXME: This is currently unused.
-    var deciseconds = Math.round(game_duration / 100);
-    var seconds = Math.floor(deciseconds / 10);
-    deciseconds -= 10 * seconds;
-    var minutes = Math.floor(seconds / 60);
-    seconds -= 60 * minutes;
-
-    SetCentreText(sprintf("You win in %d:%02d.%d. Click to restart.", minutes, seconds, deciseconds));
   }
 
   function DrawLoading() {

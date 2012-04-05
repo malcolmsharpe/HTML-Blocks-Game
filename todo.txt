@@ -10,9 +10,6 @@ Game graphics:
 - Sliding animation.
 - Pause before ending game.
 
-Gameplay:
-- Win condition (advacing to next level).
-
 Mobile:
 - Graphics layout.
 - Input scheme.
