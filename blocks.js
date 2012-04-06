@@ -75,27 +75,47 @@ $(window).load(function(){
   }
 
   var KEYCODE_ESC = 27;
+  var KEYCODE_R = 82;
+
   var KEYCODE_LEFT = 37;
   var KEYCODE_UP = 38;
   var KEYCODE_RIGHT = 39;
   var KEYCODE_DOWN = 40;
-  var KEYCODE_R = 82;
+  var ARROW_KEYS = [37, 38, 39, 40];
+
+  function IsArrowKey(key) {
+    return 37 <= key && key <= 40;
+  }
+
+  var game_key_depressed; // FIXME: can we access this directly?
+  var game_ismoving;
+  var move_dr, move_dc, move_start_date;
+  var MOVE_DURATION_MS = 150;
 
   $("").keydown(function(e){
     if (game_screen == SCREEN_GAME) {
-      var dr, dc, key = e.keyCode;
+      var key = e.keyCode;
 
-      if (key == KEYCODE_ESC) AbortGame(), e.preventDefault();
-      if (key == KEYCODE_R) ResetGame(), e.preventDefault();
+      if (key == KEYCODE_ESC) e.preventDefault(), AbortGame();
+      if (key == KEYCODE_R) e.preventDefault(), ResetGame();
 
-      if (key == KEYCODE_LEFT)  dr =  0, dc = -1;
-      if (key == KEYCODE_UP)    dr = -1, dc =  0;
-      if (key == KEYCODE_RIGHT) dr =  0, dc =  1;
-      if (key == KEYCODE_DOWN)  dr =  1, dc =  0;
-
-      if (dr || dc) {
+      if (IsArrowKey(key)) {
         e.preventDefault();
-        Move(dr, dc);
+        game_key_depressed[key] = true;
+
+        if (!game_ismoving) {
+          Move(key);
+        }
+      }
+    }
+  });
+
+  $("").keyup(function(e){
+    if (game_screen == SCREEN_GAME) {
+      var key = e.keyCode;
+      if (IsArrowKey(key)) {
+        game_key_depressed[key] = false;
+        e.preventDefault();
       }
     }
   });
@@ -119,6 +139,7 @@ $(window).load(function(){
   var blocks;
   var goals;
 
+  var mark;
   var winning;
   var happy;
 
@@ -136,7 +157,6 @@ $(window).load(function(){
     if (!won) return;
     winning = true;
     complete[level_i][level_j] = true;
-    Draw();
 
     $.doTimeout(WIN_PAUSE_MS, function() {
       // Make sure we don't go to the next level if the user
@@ -147,8 +167,27 @@ $(window).load(function(){
     });
   }
 
-  function Move(dr, dc) {
+  function GetRowsOrdering(dr) {
+    var rows = Iota(game_height);
+    if (dr == 1) rows.reverse();
+    return rows;
+  }
+
+  function GetColsOrdering(dc) {
+    var cols = Iota(game_width);
+    if (dc == 1) cols.reverse();
+    return cols;
+  }
+
+  function Move(key) {
     if (winning) return;
+
+    var dr,dc;
+
+    if (key == KEYCODE_LEFT)  dr =  0, dc = -1;
+    if (key == KEYCODE_UP)    dr = -1, dc =  0;
+    if (key == KEYCODE_RIGHT) dr =  0, dc =  1;
+    if (key == KEYCODE_DOWN)  dr =  1, dc =  0;
 
     // find smiley
     var smiley_r, smiley_c;
@@ -162,9 +201,7 @@ $(window).load(function(){
     }
 
     // propagate stuckness
-    var rows = Iota(game_height), cols = Iota(game_width);
-    if (dr == 1) rows.reverse();
-    if (dc == 1) cols.reverse();
+    var rows = GetRowsOrdering(dr), cols = GetColsOrdering(dc);
 
     var stuck = [];
 
@@ -177,7 +214,7 @@ $(window).load(function(){
     });
 
     // propagate movement
-    var mark = [];
+    mark = [];
     $.each(rows, function(ir, r) {
       mark[r] = [];
     });
@@ -216,7 +253,20 @@ $(window).load(function(){
       }
     }
 
-    // execute movement
+    // begin movement
+    if (happy) {
+      game_ismoving = true;
+      move_dr = dr;
+      move_dc = dc;
+      move_start_date = new Date();
+    }
+  }
+
+  function CompleteMove() {
+    // complete movement
+    var dr = move_dr, dc = move_dc;
+    var rows = GetRowsOrdering(dr), cols = GetColsOrdering(dc);
+
     $.each(rows, function(ir, r) {
       $.each(cols, function(ic, c) {
         if (mark[r][c]) {
@@ -226,8 +276,9 @@ $(window).load(function(){
         }
       });
     });
-
-    Draw();
+    mark = [];
+    game_ismoving = false;
+    move_dr = move_dc = move_start_date = undefined;
 
     CheckWin();
   }
@@ -262,9 +313,35 @@ $(window).load(function(){
     winning = false;
     happy = true;
 
-    Draw();
+    game_key_depressed = [];
+    game_ismoving = false;
+
+    GameLoop();
 
     return true;
+  }
+
+  function GetMoveProgress() {
+    // assert game_ismoving
+    cur_date = new Date();
+    return Math.min(1.0, (cur_date - move_start_date) / MOVE_DURATION_MS);
+  }
+
+  function GameLoop() {
+    if (game_screen != SCREEN_GAME) return;
+    window.requestAnimationFrame(GameLoop);
+
+    if (game_ismoving && GetMoveProgress() >= 1.0) {
+      CompleteMove();
+    }
+
+    $.each(ARROW_KEYS, function(i, key) {
+      if (!game_ismoving && game_key_depressed[key]) {
+        Move(key);
+      }
+    });
+
+    Draw();
   }
 
   function ResetGame() {
@@ -451,11 +528,15 @@ $(window).load(function(){
   var RAW_SIZE = 32;
   var SIZE = scale * RAW_SIZE;
 
-  function GetFill(goal, ch) {
+  var TILE_TYPE_GOAL = 0;
+  var TILE_TYPE_BLOCK = 1;
+  var TILE_TYPE_MOVING = 2;
+
+  function GetFill(tile_type, ch) {
     ch = ch.toLowerCase();
     if (ch == '#') return WALL;
 
-    if (goal) {
+    if (tile_type == TILE_TYPE_GOAL) {
       if (ch == 'r') return GOAL_RED;
       if (ch == 'y') return GOAL_YELLOW;
       if (ch == 'b') return GOAL_BLUE;
@@ -468,10 +549,15 @@ $(window).load(function(){
     return ERROR_COLOUR;
   }
 
-  function DrawTile(r, c, goal) {
+  function DrawTile(r, c, tile_type) {
     var tile;
-    if (goal) tile = goals[r][c];
+    if (tile_type == TILE_TYPE_GOAL) tile = goals[r][c];
     else tile = blocks[r][c];
+
+    if (game_ismoving) {
+      if (mark[r][c] && tile_type == TILE_TYPE_BLOCK) return;
+      if (!mark[r][c] && tile_type == TILE_TYPE_MOVING) return;
+    }
 
     // Walls should be consistent between goals and blocks.
     // If they aren't, that's an error.
@@ -482,7 +568,7 @@ $(window).load(function(){
 
     ctx.beginPath();
     ctx.rect(SIZE * c, SIZE * r, SIZE, SIZE);
-    ctx.fillStyle = GetFill(goal, tile);
+    ctx.fillStyle = GetFill(tile_type, tile);
     ctx.fill();
 
     if (IsUpper(tile)) {
@@ -509,9 +595,22 @@ $(window).load(function(){
     // Draws full-size, starting from 0,0.
     for (var r = 0; r < game_height; ++r) {
       for (var c = 0; c < game_width; ++c) {
-        DrawTile(r,c,true);
-        DrawTile(r,c,false);
+        DrawTile(r,c,TILE_TYPE_GOAL);
+        DrawTile(r,c,TILE_TYPE_BLOCK);
       }
+    }
+
+    if (game_ismoving) {
+      var progress = GetMoveProgress();
+
+      ctx.save();
+      ctx.translate(SIZE*move_dc*progress, SIZE*move_dr*progress);
+      for (var r = 0; r < game_height; ++r) {
+        for (var c = 0; c < game_width; ++c) {
+          DrawTile(r,c,TILE_TYPE_MOVING);
+        }
+      }
+      ctx.restore();
     }
   }
 
