@@ -1,3 +1,6 @@
+Gameplay:
+- One-step undo?
+
 Game graphics:
 - Animation that is faster & smoother.
 - Text hack's positioning is likely to fail on retina devices.

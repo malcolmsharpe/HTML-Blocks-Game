@@ -88,7 +88,7 @@ $(window).load(function(){
   }
 
   var game_key_depressed; // FIXME: can we access this directly?
-  var game_ismoving;
+  var game_ismoving, game_requestdraw;
   var move_dr, move_dc, move_start_date;
   var MOVE_DURATION_MS = 150;
 
@@ -157,6 +157,7 @@ $(window).load(function(){
     if (!won) return;
     winning = true;
     complete[level_i][level_j] = true;
+    game_requestdraw = true;
 
     $.doTimeout(WIN_PAUSE_MS, function() {
       // Make sure we don't go to the next level if the user
@@ -260,6 +261,8 @@ $(window).load(function(){
       move_dc = dc;
       move_start_date = new Date();
     }
+
+    game_requestdraw = true;
   }
 
   function CompleteMove() {
@@ -278,6 +281,7 @@ $(window).load(function(){
     });
     mark = [];
     game_ismoving = false;
+    game_requestdraw = true;
     move_dr = move_dc = move_start_date = undefined;
 
     CheckWin();
@@ -316,6 +320,7 @@ $(window).load(function(){
 
     game_key_depressed = [];
     game_ismoving = false;
+    game_requestdraw = true;
 
     GameLoop();
 
@@ -342,7 +347,10 @@ $(window).load(function(){
       }
     });
 
-    Draw();
+    if (game_requestdraw || game_ismoving) {
+      game_requestdraw = false;
+      Draw();
+    }
   }
 
   function ResetGame() {
@@ -550,6 +558,18 @@ $(window).load(function(){
     return ERROR_COLOUR;
   }
 
+  function DrawFace(r, c) {
+    // This is separated out for profiling purposes.
+    ctx.beginPath();
+    ctx.rect(SIZE * c, SIZE * r, SIZE, SIZE);
+    if (happy) {
+      ctx.fillStyle = HAPPYFACE;
+    } else {
+      ctx.fillStyle = SADFACE;
+    }
+    ctx.fill();
+  }
+
   function DrawTile(r, c, tile_type) {
     var tile;
     if (tile_type == TILE_TYPE_GOAL) tile = goals[r][c];
@@ -572,16 +592,7 @@ $(window).load(function(){
     ctx.fillStyle = GetFill(tile_type, tile);
     ctx.fill();
 
-    if (IsUpper(tile)) {
-      ctx.beginPath();
-      ctx.rect(SIZE * c, SIZE * r, SIZE, SIZE);
-      if (happy) {
-        ctx.fillStyle = HAPPYFACE;
-      } else {
-        ctx.fillStyle = SADFACE;
-      }
-      ctx.fill();
-    }
+    if (IsUpper(tile)) DrawFace(r,c);
   }
 
   function PlayingAreaWidth() {

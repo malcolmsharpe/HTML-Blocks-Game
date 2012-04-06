@@ -1,0 +1,4 @@
+DrawTile is the bottleneck.
+
+Even in the levels with error areas that receive faces,
+the DrawFace calls are not significant.
