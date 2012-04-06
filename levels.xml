@@ -248,6 +248,30 @@
 ]]></goals>
 </level>
 
+<level name="Mirror 2">
+<author>Malcolm Sharpe</author>
+<width>11</width>
+<height>7</height>
+<blocks><![CDATA[
+###########
+#.........#
+#.r..#....#
+#.rR.#....#
+#....#....#
+####...####
+...#####...
+]]></blocks>
+<goals><![CDATA[
+###########
+#.........#
+#....#..r.#
+#....#.rr.#
+#....#....#
+####...####
+...#####...
+]]></goals>
+</level>
+
 </world>
 
 <world color="red">

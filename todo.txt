@@ -2,7 +2,7 @@ Input:
 - Constant speed movement while key is pressed.
 
 Game graphics:
-- Sliding animation.
+- Sliding animation (via requestAnimationFrame?).
 - Text hack's positioning is likely to fail on retina devices.
 
 Mobile:
