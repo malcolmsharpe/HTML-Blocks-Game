@@ -1,6 +1,4 @@
 Game graphics:
-- Checker pattern for goals.
-- Size.
 - Smiley.
 - Title & author.
 - Sliding animation.
@@ -9,3 +7,7 @@ Game graphics:
 Mobile:
 - Graphics layout.
 - Input scheme.
+
+Input validation:
+- Display some error when walls are inconsistent between 'blocks' and 'goals'.
+- In general, display some error whenever we make use of ERROR_COLOUR when drawing.

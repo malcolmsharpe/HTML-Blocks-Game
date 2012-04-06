@@ -19,3 +19,14 @@ Level selection:
 In-Game:
   Colours:
     Blocks are drawn with transparency.
+
+  Scaling:
+    A minimum 20px margin is required on left and right.
+    A minimum 35px margin is required on the bottom.
+    A minimum 74px margin is required at the top (including title/author info).
+
+  The level title block is set 16px x 16px from the upper left corner.
+  There is a 10px separation between the level title block and the level name.
+  The byline begins 150px from the right edge.
+  The byline's baseline is 34px from the top.
+  Similarly, the level name's baseline is 34px from the top.

@@ -353,9 +353,14 @@ $(window).load(function(){
   var YELLOW = 'rgba(255, 207, 0, 0.78)';
   var BLUE = 'rgba(51, 59, 242, 0.78)';
 
-  var GOAL_RED = '#c00000';
-  var GOAL_BLUE = '#000080';
-  var GOAL_YELLOW = '#ffc90e';
+  var redgoal_img = $("#redgoal")[0];
+  var bluegoal_img = $("#bluegoal")[0];
+  var yellowgoal_img = $("#yellowgoal")[0];
+
+  var GOAL_RED = ctx.createPattern(redgoal_img, 'repeat');
+  var GOAL_BLUE = ctx.createPattern(bluegoal_img, 'repeat');
+  var GOAL_YELLOW = ctx.createPattern(yellowgoal_img, 'repeat');
+
   var ERROR_COLOUR = '#FF00FF';
 
   var LS_OUTER_MARGIN = scale * 64;
@@ -412,7 +417,7 @@ $(window).load(function(){
     });
   }
 
-  var RAW_SIZE = 4;
+  var RAW_SIZE = 32;
   var SIZE = scale * RAW_SIZE;
 
   function GetFill(goal, ch) {
@@ -445,15 +450,62 @@ $(window).load(function(){
     ctx.fill();
   }
 
-  function DrawGame() {
-    SetCentreText("");
+  function PlayingAreaWidth() {
+    return SIZE*game_width;
+  }
 
+  function PlayingAreaHeight() {
+    return SIZE*game_height;
+  }
+
+  function DrawPlayingArea() {
+    // Draws full-size, starting from 0,0.
     for (var r = 0; r < game_height; ++r) {
       for (var c = 0; c < game_width; ++c) {
         DrawTile(r,c,true);
         DrawTile(r,c,false);
       }
     }
+  }
+
+  var LEFT_MARGIN = scale * 20;
+  var RIGHT_MARGIN = scale * 20;
+  var TOP_MARGIN = scale * 74;
+  var BOTTOM_MARGIN = scale * 35;
+
+  var MAX_GAME_WIDTH = width - LEFT_MARGIN - RIGHT_MARGIN;
+  var MAX_GAME_HEIGHT = height - TOP_MARGIN - BOTTOM_MARGIN;
+
+  function DrawGame() {
+    SetCentreText("");
+
+    ctx.save();
+
+    var logical_width = PlayingAreaWidth();
+    var logical_height = PlayingAreaHeight();
+    var hscale = MAX_GAME_WIDTH / logical_width;
+    var vscale = MAX_GAME_HEIGHT / logical_height;
+    var scale = Math.min(hscale, vscale);
+
+    var actual_width = logical_width, actual_height = logical_height;
+    if (scale < 1) {
+      var scaled_size = SIZE;
+      while (scaled_size/SIZE > scale) --scaled_size;
+      scale = scaled_size/SIZE;
+
+      actual_width *= scale;
+      actual_height *= scale;
+    }
+
+    x_offset = Math.floor(width/2 - actual_width/2);
+    y_offset = Math.floor(height/2 - actual_height/2);
+    ctx.translate(x_offset, y_offset);
+    if (scale < 1) {
+      ctx.scale(scale, scale);
+    }
+
+    DrawPlayingArea();
+    ctx.restore();
   }
 
   function Draw() {
