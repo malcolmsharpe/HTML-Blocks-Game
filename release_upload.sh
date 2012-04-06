@@ -1,5 +1,5 @@
 PROJECT=blocks
-SRCS="$PROJECT.html $PROJECT.js $PROJECT.mf"
+SRCS=`cat $PROJECT.mf.raw | xargs echo $PROJECT.mf`
 DEST=masharpe@math.uwaterloo.ca:public_html/
 
 python generate_manifest.py $PROJECT.mf
