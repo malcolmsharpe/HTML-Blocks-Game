@@ -11,13 +11,26 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   </head>
   <body style="background: #ADD8E6">
-    <table id="centretable" style="position:fixed; left:0px; top:0px; pointer-events: none; z-index: 1;">
-      <tr><td id="centretext" align="center" style="color:black;">placeholder a very long string indeed</td></tr>
+    <!-- text (to work around canvas's awful text rendering) -->
+    <table id="centretable" style="position:absolute; left:0px; top:0px; pointer-events: none; z-index: 1;">
+      <tr><td id="centretext" align="center" style="color:black;"></td></tr>
     </table>
-    <canvas id="draw" style="position:fixed; left:0px; top:0px; z-index:0;">
+    <div class="setsize" style="position:absolute; left: 0px; top: 0px;">
+      <div id="levelname" style="position:absolute; pointer-events: none; z-index: 1;"></div>
+    </div>
+    <div class="setsize" style="position:absolute; left: 0px; top: 0px;">
+      <div id="byline" style="position:absolute; pointer-events: none; z-index: 1;"></div>
+    </div>
+
+    <!-- main drawing area -->
+    <canvas id="draw" style="position:absolute; left:0px; top:0px; z-index:0;">
     </canvas>
+
+    <!-- auxiliary images -->
     <img src="redgoal.png" id="redgoal"/>
     <img src="bluegoal.png" id="bluegoal"/>
     <img src="yellowgoal.png" id="yellowgoal"/>
+    <img src="happyface.png" id="happyface"/>
+    <img src="sadface.png" id="sadface"/>
   </body>
 </html>

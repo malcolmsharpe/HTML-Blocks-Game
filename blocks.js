@@ -119,6 +119,8 @@ $(window).load(function(){
   var blocks;
   var goals;
 
+  var happy;
+
   function CheckWin() {
     var won = true;
     for (var r = 0; r < game_height; ++r) {
@@ -181,6 +183,7 @@ $(window).load(function(){
     var DC = [0, 1, 0, -1];
 
     pushq(smiley_r, smiley_c);
+    happy = !!q.length;
     while (q.length) {
       var cur = q.pop();
       var r = cur[0], c = cur[1];
@@ -243,6 +246,8 @@ $(window).load(function(){
     game_height = parseInt(level.find('height').text());
     blocks = ParseLevelText(level.find('blocks').text());
     goals = ParseLevelText(level.find('goals').text());
+
+    happy = true;
 
     Draw();
 
@@ -332,6 +337,9 @@ $(window).load(function(){
   canvas.style.width = style_width;
   canvas.style.height = style_height;
 
+  $(".setsize").css('width', width);
+  $(".setsize").css('height', height);
+
   var centretable = $("#centretable");
   centretable.height(style_height);
   centretable.width(style_width);
@@ -356,10 +364,14 @@ $(window).load(function(){
   var redgoal_img = $("#redgoal")[0];
   var bluegoal_img = $("#bluegoal")[0];
   var yellowgoal_img = $("#yellowgoal")[0];
+  var happyface_img = $("#happyface")[0];
+  var sadface_img = $("#sadface")[0];
 
   var GOAL_RED = ctx.createPattern(redgoal_img, 'repeat');
   var GOAL_BLUE = ctx.createPattern(bluegoal_img, 'repeat');
   var GOAL_YELLOW = ctx.createPattern(yellowgoal_img, 'repeat');
+  var HAPPYFACE = ctx.createPattern(happyface_img, 'repeat');
+  var SADFACE = ctx.createPattern(sadface_img, 'repeat');
 
   var ERROR_COLOUR = '#FF00FF';
 
@@ -385,34 +397,39 @@ $(window).load(function(){
     return ERROR_COLOUR;
   }
 
+  function DrawLevelStampAt(i, j, x_offset, y_offset) {
+    ctx.beginPath();
+    ctx.rect(x_offset, y_offset, LS_LEVEL_SIZE, LS_LEVEL_SIZE);
+    ctx.fillStyle = GetWorldColour(i);
+    ctx.fill();
+
+    ctx.font = 'bold 12px "courier new", monospace';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = LS_TEXT_COLOUR;
+    var level_text = sprintf("%d-%d", i+1, j+1);
+    ctx.fillText(level_text, x_offset, y_offset);
+
+    if (complete[i][j]) {
+      ctx.beginPath();
+      ctx.moveTo(x_offset+LS_CK_LEFT_TOP_X, y_offset+LS_CK_LEFT_TOP_Y);
+      ctx.lineTo(x_offset+LS_CK_BOTTOM_X, y_offset+LS_CK_BOTTOM_Y);
+      ctx.lineTo(x_offset+LS_CK_RIGHT_TOP_X, y_offset+LS_CK_RIGHT_TOP_Y);
+      ctx.lineWidth = LS_CK_WIDTH;
+      ctx.lineCap = 'square';
+      ctx.strokeStyle = LS_CK_COLOUR;
+      ctx.stroke();
+    }
+  }
+
   function DrawLevelSelection() {
     SetCentreText("");
 
     $.each(level_names, function(i) {
       $.each(level_names[i], function(j) {
-        ctx.beginPath();
         var x_offset = LS_OUTER_MARGIN + j * (LS_LEVEL_SIZE + LS_INNER_MARGIN);
         var y_offset = LS_OUTER_MARGIN + i * (LS_LEVEL_SIZE + LS_INNER_MARGIN);
-        ctx.rect(x_offset, y_offset, LS_LEVEL_SIZE, LS_LEVEL_SIZE);
-        ctx.fillStyle = GetWorldColour(i);
-        ctx.fill();
 
-        ctx.font = 'bold 12px "courier new", monospace';
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = LS_TEXT_COLOUR;
-        var level_text = sprintf("%d-%d", i+1, j+1);
-        ctx.fillText(level_text, x_offset, y_offset);
-
-        if (complete[i][j]) {
-          ctx.beginPath();
-          ctx.moveTo(x_offset+LS_CK_LEFT_TOP_X, y_offset+LS_CK_LEFT_TOP_Y);
-          ctx.lineTo(x_offset+LS_CK_BOTTOM_X, y_offset+LS_CK_BOTTOM_Y);
-          ctx.lineTo(x_offset+LS_CK_RIGHT_TOP_X, y_offset+LS_CK_RIGHT_TOP_Y);
-          ctx.lineWidth = LS_CK_WIDTH;
-          ctx.lineCap = 'square';
-          ctx.strokeStyle = LS_CK_COLOUR;
-          ctx.stroke();
-        }
+        DrawLevelStampAt(i, j, x_offset, y_offset);
       });
     });
   }
@@ -448,6 +465,17 @@ $(window).load(function(){
     ctx.rect(SIZE * c, SIZE * r, SIZE, SIZE);
     ctx.fillStyle = GetFill(goal, tile);
     ctx.fill();
+
+    if (IsUpper(tile)) {
+      ctx.beginPath();
+      ctx.rect(SIZE * c, SIZE * r, SIZE, SIZE);
+      if (happy) {
+        ctx.fillStyle = HAPPYFACE;
+      } else {
+        ctx.fillStyle = SADFACE;
+      }
+      ctx.fill();
+    }
   }
 
   function PlayingAreaWidth() {
@@ -476,9 +504,34 @@ $(window).load(function(){
   var MAX_GAME_WIDTH = width - LEFT_MARGIN - RIGHT_MARGIN;
   var MAX_GAME_HEIGHT = height - TOP_MARGIN - BOTTOM_MARGIN;
 
+  var LEVEL_STAMP_X_OFFSET = scale * 16;
+  var LEVEL_STAMP_Y_OFFSET = scale * 16;
+
+  var LEVEL_NAME_X_OFFSET = LEVEL_STAMP_X_OFFSET + LS_LEVEL_SIZE + scale*10;
+  var LEVEL_NAME_Y_OFFSET = scale*40;
+
+  var BYLINE_X_OFFSET = width - scale*150;
+  var BYLINE_Y_OFFSET = scale*40;
+
+  var TEXT_COLOUR = '#000000';
+
   function DrawGame() {
     SetCentreText("");
 
+    // level stamp
+    DrawLevelStampAt(level_i, level_j, LEVEL_STAMP_X_OFFSET, LEVEL_STAMP_Y_OFFSET);
+
+    // level name
+    $("#levelname").text(level_name);
+    $("#levelname").css('left', LEVEL_NAME_X_OFFSET+'px');
+    $("#levelname").css('bottom', (height-LEVEL_NAME_Y_OFFSET)+'px');
+
+    // byline
+    $("#byline").text("by "+author);
+    $("#byline").css('left', BYLINE_X_OFFSET+'px');
+    $("#byline").css('bottom', (height-BYLINE_Y_OFFSET)+'px');
+
+    // playing area
     ctx.save();
 
     var logical_width = PlayingAreaWidth();
@@ -511,6 +564,9 @@ $(window).load(function(){
   function Draw() {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, width, height);
+
+    $("#levelname").text('');
+    $("#byline").text('');
 
     if (game_screen == SCREEN_LOADING) {
       DrawLoading();

@@ -1,12 +1,14 @@
 Game graphics:
-- Smiley.
-- Title & author.
 - Sliding animation.
 - Pause before ending game.
+- Hide auxiliary images.
+- Text hack's positioning is likely to fail on retina devices.
 
 Mobile:
 - Graphics layout.
 - Input scheme.
+- To handle retina, use window.devicePixelRatio.
+- Replace "scale" variable by using the transformation matrix. (??)
 
 Input validation:
 - Display some error when walls are inconsistent between 'blocks' and 'goals'.
