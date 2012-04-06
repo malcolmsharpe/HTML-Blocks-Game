@@ -295,6 +295,7 @@ $(window).load(function(){
     // Try to start a game in world i level j.
     // Return true if the level exists, otherwise false.
 
+    if (!level_names[i]) return false;
     var name = level_names[i][j];
     if (!name) return false;
 
