@@ -459,6 +459,11 @@ $(window).load(function(){
     if (goal) tile = goals[r][c];
     else tile = blocks[r][c];
 
+    // Walls should be consistent between goals and blocks.
+    // If they aren't, that's an error.
+    // This shows up as a magenta smiley.
+    if ((goals[r][c] == '#') != (blocks[r][c] == '#')) tile = 'ERROR';
+
     if (tile == '.') return;
 
     ctx.beginPath();

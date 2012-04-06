@@ -1,7 +1,6 @@
 Game graphics:
 - Sliding animation.
 - Pause before ending game.
-- Hide auxiliary images.
 - Text hack's positioning is likely to fail on retina devices.
 
 Mobile:
@@ -11,5 +10,4 @@ Mobile:
 - Replace "scale" variable by using the transformation matrix. (??)
 
 Input validation:
-- Display some error when walls are inconsistent between 'blocks' and 'goals'.
 - In general, display some error whenever we make use of ERROR_COLOUR when drawing.
