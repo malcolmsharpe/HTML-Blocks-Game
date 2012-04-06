@@ -119,8 +119,10 @@ $(window).load(function(){
   var blocks;
   var goals;
 
+  var winning;
   var happy;
 
+  var WIN_PAUSE_MS = 1000;
   function CheckWin() {
     var won = true;
     for (var r = 0; r < game_height; ++r) {
@@ -132,12 +134,22 @@ $(window).load(function(){
     }
 
     if (!won) return;
+    winning = true;
     complete[level_i][level_j] = true;
-    if (StartGame(level_i, level_j+1)) return;
-    EndGame();
+    Draw();
+
+    $.doTimeout(WIN_PAUSE_MS, function() {
+      // Make sure we don't go to the next level if the user
+      // hit R or ESC.
+      if (winning && !StartGame(level_i, level_j+1)) {
+        EndGame();
+      }
+    });
   }
 
   function Move(dr, dc) {
+    if (winning) return;
+
     // find smiley
     var smiley_r, smiley_c;
     for (var r = 0; r < game_height; ++r) {
@@ -247,6 +259,7 @@ $(window).load(function(){
     blocks = ParseLevelText(level.find('blocks').text());
     goals = ParseLevelText(level.find('goals').text());
 
+    winning = false;
     happy = true;
 
     Draw();
@@ -259,6 +272,7 @@ $(window).load(function(){
   }
 
   function AbortGame() {
+    winning = false;
     EndGame();
   }
 
