@@ -601,7 +601,10 @@ $(window).load(function(){
     }
 
     if (game_ismoving) {
+      // Adhere to pixel boundaries to get prettier results.
       var progress = GetMoveProgress();
+      var numerator = Math.round(progress * scaled_size);
+      progress = numerator / scaled_size;
 
       ctx.save();
       ctx.translate(SIZE*move_dc*progress, SIZE*move_dr*progress);
@@ -633,6 +636,8 @@ $(window).load(function(){
 
   var TEXT_COLOUR = '#000000';
 
+  var scaled_size;
+
   function DrawGame() {
     SetCentreText("");
 
@@ -659,8 +664,8 @@ $(window).load(function(){
     var scale = Math.min(hscale, vscale);
 
     var actual_width = logical_width, actual_height = logical_height;
+    scaled_size = SIZE;
     if (scale < 1) {
-      var scaled_size = SIZE;
       while (scaled_size/SIZE > scale) --scaled_size;
       scale = scaled_size/SIZE;
 
