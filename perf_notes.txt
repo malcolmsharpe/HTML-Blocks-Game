@@ -2,3 +2,10 @@ DrawTile is the bottleneck.
 
 Even in the levels with error areas that receive faces,
 the DrawFace calls are not significant.
+
+~~~
+
+Lagginess seems to build up when the game is played for some time.
+For example, doing a run straight from the beginning and only
+skipping Switches (since it is currently bugged), 2-9 (Cave of Wonders)
+exhibits much lag. But refreshing and starting with 2-9 is not laggy.
