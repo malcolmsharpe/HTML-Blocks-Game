@@ -9,3 +9,16 @@ Lagginess seems to build up when the game is played for some time.
 For example, doing a run straight from the beginning and only
 skipping Switches (since it is currently bugged), 2-9 (Cave of Wonders)
 exhibits much lag. But refreshing and starting with 2-9 is not laggy.
+
+~~~
+
+Lag is Chrome-specific. Doing a run from beginning through to 2-9 reliably
+produces severe lag in Chrome, but in Safari, doing this same run does not
+produce any lag.
+
+Found the cause! To reproduce, repeatedly reset the game. The trouble is that
+StartGame calls GameLoop, which then starts a new loop, but the old loop only
+terminates itself when the screen changes, which never occurs when reseting
+(or when winning a level). This ends up creating many copies of the game loop.
+
+Having fixed this, lag is gone!

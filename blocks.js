@@ -322,7 +322,8 @@ $(window).load(function(){
     game_ismoving = false;
     game_requestdraw = true;
 
-    GameLoop();
+    gameLoopToken++;
+    GameLoop(gameLoopToken);
 
     return true;
   }
@@ -333,9 +334,10 @@ $(window).load(function(){
     return Math.min(1.0, (cur_date - move_start_date) / MOVE_DURATION_MS);
   }
 
-  function GameLoop() {
-    if (game_screen != SCREEN_GAME) return;
-    window.requestAnimationFrame(GameLoop);
+  var gameLoopToken = 0;
+  function GameLoop(token) {
+    if (token < gameLoopToken) return;
+    window.requestAnimationFrame(function() { GameLoop(token); });
 
     if (game_ismoving && GetMoveProgress() >= 1.0) {
       CompleteMove();
@@ -364,6 +366,7 @@ $(window).load(function(){
 
   function EndGame() {
     game_screen = SCREEN_LEVEL_SELECTION;
+    gameLoopToken++;
 
     Draw();
   }
