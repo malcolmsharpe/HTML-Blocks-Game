@@ -22,3 +22,14 @@ terminates itself when the screen changes, which never occurs when reseting
 (or when winning a level). This ends up creating many copies of the game loop.
 
 Having fixed this, lag is gone!
+
+Deeper investigation:
+- Chrome supports webkitRequestAnimationFrame.
+- Safari doesn't, so it falls back to the manual clone.
+  The manual clone uses a global variable to attempt to space the frames evenly
+  by 16ms. It tries to call the next frame at lastTime+16, and increments
+  lastTime by at least 16 each call. This forces the duplicated loops to behave
+  like a single loop.
+
+Apparently the nightly builds of Safari support webkitRequestAnimationFrame,
+but it hasn't been released yet.

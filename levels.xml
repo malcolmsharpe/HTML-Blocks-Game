@@ -534,6 +534,7 @@
 ]]></goals>
 </level>
 
+<!-- Elyot: Bonus level for you... -->
 <level name="Deform">
 <author>Elyot Grant</author>
 <width>15</width>
@@ -1098,6 +1099,7 @@
 ]]></goals>
 </level>
 
+<!-- OK guys. Have fun. -->
 <level name="Machine">
 <author>Elyot Grant</author>
 <width>31</width>
@@ -1497,5 +1499,199 @@
 ]]></goals>
 
 </level> 
+
+<world color="green">
+
+<!-- Elyot: I wanted to make a level that *REALLY* required you to understand
+how red, blue, and yellow work together.
+
+I suspect that this is hard, but it can be solved completely analytically,
+much moreso than gallery, which is a lot of trial and error and ruling out
+stuff. You need to know what sticks to what and how to use that to accomplish
+two goals that seem to be impossible to complete simultaneously. The solution
+is short (<25 moves) -->
+<level name="Quandary">
+<author>Elyot Grant</author>
+<width>12</width>
+<height>10</height>
+<blocks><![CDATA[
+############
+##R.rrrrrrr#
+##.b.bb.#.r#
+##rb#.y.#.r#
+##rb##y..yr#
+#rryrybyyy##
+#rbr##b.####
+#b.yyyyy####
+#.#.....####
+############
+]]></blocks>
+<goals><![CDATA[
+############
+##.........#
+##......#..#
+##..#r..#..#
+##..##.....#
+#.........##
+#...##..####
+#.......####
+#b#.....####
+############
+]]></goals>
+</level>
+
+<!-- Elyot: I guess you can brute force this one, but order matters, so it
+will be about 5! combinations... maybe a few less with some pruning. -->
+<level name="Circuit">
+<author>Elyot Grant</author>
+<width>20</width>
+<height>14</height>
+<blocks><![CDATA[
+####################
+#rr.#b.b.b.#.b...b.#
+#r.r#bbbbbbbbybbbb.#
+#r###bbbyb.#bbbbbb.#
+#.ybbbbbbb.#y.y.yb.#
+#.#bbbybbb.#bbybbb.#
+#.#yybbbbbyyybbbbb.#
+#.#bbbbbyy.#b.b.yb.#
+#.#ybyybbb.#bby.yb.#
+#.#bbbbbbb.#ybbbbb.#
+#.#bybbbbbbbbbbbbb.#
+#.####b#b###b#b#b###
+#R...............###
+####################
+]]></blocks>
+<goals><![CDATA[
+####################
+#.r.#......#......b#
+#..r#.............b#
+#.###......#......b#
+#r.........#......b#
+#.#........#......b#
+#.#...............b#
+#.#........#......b#
+#.#........#......b#
+#.#........#......b#
+#.#...............b#
+#.####.#.###.#.#.###
+#................###
+####################
+]]></goals>
+</level>
+
+<!-- Elyot: This is more of a "fun" kinda level. -->
+<level name="Dig for Treasure">
+<author>Elyot Grant</author>
+<width>15</width>
+<height>15</height>
+<blocks><![CDATA[
+###############
+#.Y...........#
+#.............#
+#.............#
+#.............#
+#bbbbybbbbbbbb#
+#bbybbbybbbbbb#
+#bbbbbbbbbbbbb#
+#bbbybbbbbybbb#
+#bbbbbybbbbbbb#
+#bbbbbbbbybbbb#
+#######y#######
+#......y......#
+#.....yyy.....#
+###############
+]]></blocks>
+<goals><![CDATA[
+###############
+#.............#
+#.............#
+#.............#
+#.............#
+#.............#
+#.............#
+#.............#
+#.............#
+#.............#
+#.............#
+#######.#######
+#.....y.y.....#
+#.............#
+###############
+]]></goals>
+</level>
+
+<!-- Elyot: This one might make you hate life. I'm pretty sure there is
+more-or-less only one solution. Analysis REALLY helps. -->
+<level name="Concentrate">
+<author>Elyot Grant</author>
+<width>15</width>
+<height>15</height>
+<blocks><![CDATA[
+###############
+#.y...........#
+#.............#
+#.............#
+#......y......#
+#........y....#
+#....y........#
+#y.....B....y.#
+#.....y..y....#
+#......y......#
+#..........y..#
+#..y..........#
+#....y.y......#
+#...y.y.y.....#
+###############
+]]></blocks>
+<goals><![CDATA[
+###############
+#.............#
+#.............#
+#......y......#
+#......y......#
+#......y......#
+#......y......#
+#..yyyybyyyy..#
+#......y......#
+#......y......#
+#......y......#
+#......y......#
+#.............#
+#.............#
+###############
+]]></goals>
+</level>
+
+<!-- Elyot: This one took <10 mins. -->
+<level name="Swirl">
+<author>Elyot Grant</author>
+<width>9</width>
+<height>9</height>
+<blocks><![CDATA[
+#########
+#.rrrrrr#
+#.bbbbbr#
+#.rrrrbr#
+#.rbbRbr#
+#.rbbbbr#
+#.rrrrrr#
+#.......#
+#########
+]]></blocks>
+<goals><![CDATA[
+#########
+#b.....r#
+#.......#
+#.......#
+#.......#
+#.......#
+#.......#
+#r.....b#
+#########
+]]></goals>
+</level>
+
+</world>
 
 </levels>

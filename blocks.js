@@ -463,6 +463,7 @@ $(window).load(function(){
   var RED = 'rgba(255, 0, 0, 0.78)';
   var YELLOW = 'rgba(255, 207, 0, 0.78)';
   var BLUE = 'rgba(51, 59, 242, 0.78)';
+  var GREEN = 'rgba(58, 251, 48, 0.78)';
 
   var redgoal_img = $("#redgoal")[0];
   var bluegoal_img = $("#bluegoal")[0];
@@ -497,6 +498,7 @@ $(window).load(function(){
     if (colour_name == 'red') return RED;
     if (colour_name == 'yellow') return YELLOW;
     if (colour_name == 'blue') return BLUE;
+    if (colour_name == 'green') return GREEN;
     return ERROR_COLOUR;
   }
 

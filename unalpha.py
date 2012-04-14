@@ -1,6 +1,8 @@
 import re
 import sys
 
+# Note: observed alpha is possibly 0xC7.
+# Original value has been lost.
 if len(sys.argv) != 3:
   print 'Usage: python unalpha.py alpha colour'
   sys.exit(1)
